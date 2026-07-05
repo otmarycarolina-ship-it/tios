@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 export default function App() {
   // CONFIGURACIONES PREDETERMINADAS
   const [config, setConfig] = useState({
-    tios: "Tíos",
+    tios: "Queridos Tíos",
     boda: "1996-05-15",
     firma: "Su sobrino(a) que los quiere",
     carta: `Queridos tíos, hoy celebramos no solo el paso del tiempo, sino la hermosa historia que han construido juntos.\n\nA pesar de la distancia física que nos separa hoy, sus risas, consejos y el inmenso ejemplo de unión que nos dan cruzan cualquier frontera. Son el claro ejemplo de que el amor verdadero todo lo puede, se fortalece con los años y florece en cada etapa.\n\n¡Que sigan sumando infinitos momentos felices, salud y complicidad! Les mando un abrazo gigante y apretado.`,
@@ -391,7 +391,9 @@ export default function App() {
 
           {/* COLLAGE DE FOTOS */}
           <div className="mb-10">
+            {/* Corregido a "Recuerdos" */}
             <h3 className="font-serif text-2xl font-bold text-rose-900 text-center mb-1">Recuerdos</h3>
+            {/* Corregido a "momentos" */}
             <p className="text-center text-xs text-gray-500 mb-8 italic">Momentos felices congelados en el tiempo</p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 justify-items-center">
