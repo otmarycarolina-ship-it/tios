@@ -285,7 +285,7 @@ export default function App() {
         <div className={`fixed inset-0 bg-rose-50 z-40 flex flex-col items-center justify-center p-4 transition-all duration-1000 ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
           <div className="text-center mb-8 max-w-sm px-4">
             <span className="text-xs font-semibold tracking-widest text-rose-500 uppercase">Un mensaje especial de aniversario</span>
-            <h1 className="font-serif text-3xl md:text-4xl text-rose-900 mt-2 font-bold leading-tight">Para mis queridos {config.tios}</h1>
+            <h1 className="font-serif text-3xl md:text-4xl text-rose-900 mt-2 font-bold leading-tight">Para mis {config.tios}</h1>
             <p className="text-gray-600 mt-3 text-sm">Preparen sus corazones, toquen el sobre para abrir este regalo digital hecho con mucho amor desde la distancia.</p>
           </div>
 
@@ -311,7 +311,7 @@ export default function App() {
                 style={{ 
                   zIndex: isOpen ? 5 : 2, 
                   height: isOpen ? '240px' : '180px',
-                  transform: isOpen ? 'translateY(-130px)' : 'none',
+                  transform: isOpen ? 'translateY(-130px)' : 'none(),
                   transitionDelay: isOpen ? '0.8s' : '0s',
                   boxShadow: '0 -5px 15px rgba(0,0,0,0.05)'
                 }}
@@ -391,9 +391,7 @@ export default function App() {
 
           {/* COLLAGE DE FOTOS */}
           <div className="mb-10">
-            {/* Corregido a "Recuerdos" */}
             <h3 className="font-serif text-2xl font-bold text-rose-900 text-center mb-1">Recuerdos</h3>
-            {/* Corregido a "momentos" */}
             <p className="text-center text-xs text-gray-500 mb-8 italic">Momentos felices congelados en el tiempo</p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 justify-items-center">
