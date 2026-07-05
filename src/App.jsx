@@ -19,8 +19,8 @@ export default function App() {
   const [fadeMain, setFadeMain] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [yearsCount, setYearsCount] = useState("--");
-  // --- ESTADO PARA LA CÁPSULA ---
-  const [candadoAbierto, setCandadoAbierto] = useState(false);
+  // Estado para la cápsula
+  const [showCapsule, setShowCapsule] = useState(false);
 
   // Inputs temporales para el modal
   const [inputNames, setInputNames] = useState("");
@@ -362,40 +362,42 @@ export default function App() {
           </div>
 
           <div className="bg-rose-50 border border-rose-100 rounded-[24px] p-6 text-center mb-10">
-            <p className="text-gray-600 text-xs">Aunque hoy nos separen kilómetros, este abrazo virtual viaja a la velocidad de la luz.</p>
+            <div className="text-rose-500 text-3xl mb-3">
+              <i className="fas fa-globe-americas animate-spin" style={{ animationDuration: '20s' }}></i>
+            </div>
+            <p className="font-serif text-base text-rose-900 font-semibold mb-1">No hay distancia para el cariño</p>
+            <p className="text-gray-600 text-xs leading-relaxed">Aunque hoy nos separen kilómetros, este abrazo virtual viaja a la velocidad de la luz para llegar hasta su hogar.</p>
           </div>
 
-          {/* --- CÁPSULA DEL TIEMPO (NUEVO) --- */}
-          <div className="flex flex-col items-center mt-12 mb-20 p-6 bg-white rounded-[24px] shadow-sm border border-rose-100">
-            <h3 className="text-rose-900 font-serif font-bold text-lg mb-4">Un mensaje especial</h3>
-            <button 
-              onClick={() => setCandadoAbierto(!candadoAbierto)}
-              className={`p-6 rounded-full transition-all duration-500 shadow-md ${candadoAbierto ? 'bg-green-100' : 'bg-rose-100 hover:scale-105'}`}
-            >
-              <i className={`fas ${candadoAbierto ? 'fa-lock-open text-green-600' : 'fa-lock text-rose-600'} text-4xl`}></i>
-            </button>
-            
-            {candadoAbierto && (
-              <div className="mt-6 w-full animate-fade-in p-4 bg-green-50 rounded-2xl border border-green-200 text-center">
-                <p className="text-green-800 font-bold mb-4 text-sm">¡Mensaje de voz encontrado!</p>
-                <video 
-                  controls 
-                  className="w-full rounded-xl shadow-lg"
-                  src="https://i.imgur.com/sk7u7kI.mp4"
-                >
-                  Tu navegador no soporta el audio/video.
-                </video>
-              </div>
-            )}
+          {/* CÁPSULA DEL TIEMPO */}
+          <div className="mb-12 flex flex-col items-center bg-white border-2 border-dashed border-rose-200 p-8 rounded-[24px]">
+             <h3 className="text-rose-800 font-bold text-lg mb-4 text-center">Cápsula del Tiempo</h3>
+             <button 
+               onClick={() => setShowCapsule(!showCapsule)}
+               className="bg-rose-600 hover:bg-rose-700 text-white px-8 py-3 rounded-full font-bold shadow-lg transition-all"
+             >
+               {showCapsule ? "Cerrar Cápsula" : "Abrir Cápsula"}
+             </button>
+             
+             {showCapsule && (
+               <div className="mt-6 w-full animate-in fade-in zoom-in duration-500">
+                  <video controls className="w-full rounded-2xl shadow-xl">
+                    <source src="https://i.imgur.com/sk7u7kI.mp4" type="video/mp4" />
+                    Tu navegador no soporta video.
+                  </video>
+               </div>
+             )}
           </div>
         </main>
       )}
 
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-[24px] shadow-2xl p-6">
-            <h3 className="font-serif text-xl font-bold mb-4">Personaliza tu Regalo</h3>
-            <div className="space-y-4">
+          <div className="bg-white w-full max-w-md rounded-[24px] shadow-2xl overflow-hidden">
+            <div className="bg-rose-950 text-white p-6">
+              <h3 className="font-serif text-xl font-bold">Personaliza tu Regalo</h3>
+            </div>
+            <div className="p-6 space-y-4">
               <input value={inputNames} onChange={(e) => setInputNames(e.target.value)} className="w-full border p-2 rounded-xl" placeholder="Nombres" />
               <input type="date" value={inputWeddingDate} onChange={(e) => setInputWeddingDate(e.target.value)} className="w-full border p-2 rounded-xl" />
               <textarea value={inputLetter} onChange={(e) => setInputLetter(e.target.value)} className="w-full border p-2 rounded-xl" rows="3"></textarea>
