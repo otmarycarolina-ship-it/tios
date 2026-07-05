@@ -19,7 +19,7 @@ export default function App() {
   const [fadeMain, setFadeMain] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [yearsCount, setYearsCount] = useState("--");
-  // --- NUEVO ESTADO PARA CÁPSULA ---
+  // --- ESTADO PARA LA CÁPSULA ---
   const [candadoAbierto, setCandadoAbierto] = useState(false);
 
   // Inputs temporales para el modal
@@ -28,10 +28,13 @@ export default function App() {
   const [inputSignature, setInputSignature] = useState("");
   const [inputLetter, setInputLetter] = useState("");
 
+  // Toast state
   const [toast, setToast] = useState({ show: false, message: "", icon: "" });
+
   const canvasRef = useRef(null);
   const addHeartsRef = useRef(null);
 
+  // Cargar parámetros de la URL e imágenes de localStorage
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     let updatedConfig = { ...config };
@@ -56,17 +59,28 @@ export default function App() {
     setInputLetter(updatedConfig.carta);
   }, []);
 
+  // Calcular el contador de años
   useEffect(() => {
     const weddingDate = new Date(config.boda + 'T00:00:00');
     const now = new Date();
+    let diffMs = now - weddingDate;
+
+    if (diffMs < 0) {
+      setYearsCount("0");
+      return;
+    }
+
     let years = now.getFullYear() - weddingDate.getFullYear();
     let months = now.getMonth() - weddingDate.getMonth();
     let days = now.getDate() - weddingDate.getDate();
+
     if (days < 0) months--;
     if (months < 0) years--;
-    setYearsCount(years < 0 ? 0 : years);
+
+    setYearsCount(years);
   }, [config.boda]);
 
+  // Canvas Animación de Corazones
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -88,7 +102,7 @@ export default function App() {
         this.speedX = Math.random() * 2 - 1;
         this.speedY = -(Math.random() * 1.5 + 0.8);
         this.opacity = Math.random() * 0.5 + 0.3;
-        this.color = `rgba(220, 50, 80, `;
+        this.color = `rgba(${220 + Math.random() * 35}, ${50 + Math.random() * 50}, ${80 + Math.random() * 50}, `;
         this.isSparkle = isSparkle;
         if (isSparkle) {
           this.speedY = -(Math.random() * 4 + 2);
@@ -113,31 +127,47 @@ export default function App() {
       update() {
         this.x += this.speedX;
         this.y += this.speedY;
-        this.opacity -= this.isSparkle ? 0.015 : 0.001;
+        if (this.isSparkle) {
+          this.opacity -= 0.015;
+        } else {
+          this.opacity -= 0.001;
+        }
       }
     }
 
     addHeartsRef.current = (x, y, count = 8) => {
-      for (let i = 0; i < count; i++) hearts.push(new Heart(x, y, true));
+      for (let i = 0; i < count; i++) {
+        hearts.push(new Heart(x, y, true));
+      }
     };
 
     const handleInteraction = (e) => {
       let x = e.clientX || (e.touches && e.touches[0].clientX);
       let y = e.clientY || (e.touches && e.touches[0].clientY);
-      if (x && y) addHeartsRef.current(x, y, 8);
+      if (x && y) {
+        addHeartsRef.current(x, y, 8);
+      }
     };
 
     window.addEventListener('click', handleInteraction);
     window.addEventListener('touchstart', handleInteraction);
 
+    for (let i = 0; i < 20; i++) {
+      hearts.push(new Heart(Math.random() * canvas.width, Math.random() * canvas.height));
+    }
+
     let animationFrameId;
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (Math.random() < 0.04 && hearts.length < 80) hearts.push(new Heart());
+      if (Math.random() < 0.04 && hearts.length < 80) {
+        hearts.push(new Heart());
+      }
       for (let i = hearts.length - 1; i >= 0; i--) {
         hearts[i].update();
         hearts[i].draw();
-        if (hearts[i].y < -20 || hearts[i].opacity <= 0) hearts.splice(i, 1);
+        if (hearts[i].y < -20 || hearts[i].opacity <= 0 || hearts[i].x < -20 || hearts[i].x > canvas.width + 20) {
+          hearts.splice(i, 1);
+        }
       }
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -155,6 +185,7 @@ export default function App() {
     setIsOpen(true);
     const midX = window.innerWidth / 2;
     const midY = window.innerHeight / 2;
+    
     setTimeout(() => {
       if (addHeartsRef.current) {
         addHeartsRef.current(midX, midY, 40);
@@ -162,89 +193,179 @@ export default function App() {
         setTimeout(() => addHeartsRef.current(midX + 100, midY, 20), 300);
       }
     }, 400);
+
     setTimeout(() => {
       setShowIntro(false);
       setShowMain(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      setTimeout(() => setFadeMain(true), 50);
+      setTimeout(() => {
+        setFadeMain(true);
+      }, 50);
     }, 2200);
   };
 
   const showToastMsg = (msg, icon) => {
     setToast({ show: true, message: msg, icon: icon });
-    setTimeout(() => setToast({ show: false, message: "", icon: "" }), 4000);
+    setTimeout(() => {
+      setToast({ show: false, message: "", icon: "" });
+    }, 4000);
   };
 
   const previewUpload = (e, index) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (uploadEvent) => setConfig(prev => ({ ...prev, [`img${index}`]: uploadEvent.target.result }));
+      reader.onload = (uploadEvent) => {
+        setConfig(prev => ({ ...prev, [`img${index}`]: uploadEvent.target.result }));
+      };
       reader.readAsDataURL(file);
     }
   };
 
   const generateCustomLink = () => {
-    const t = inputNames.trim() || "Tíos", b = inputWeddingDate || "1996-05-15", f = inputSignature.trim() || "Su sobrino(a)", c = inputLetter.trim() || "";
+    const t = inputNames.trim() || "Tíos";
+    const b = inputWeddingDate || "1996-05-15";
+    const f = inputSignature.trim() || "Su sobrino(a)";
+    const c = inputLetter.trim() || "";
+
     const updated = { ...config, tios: t, boda: b, firma: f, carta: c, locked: true };
     setConfig(updated);
-    for (let i = 1; i <= 3; i++) if (updated[`img${i}`]) localStorage.setItem(`aniv_img_${i}`, updated[`img${i}`]);
+
+    for (let i = 1; i <= 3; i++) {
+      if (updated[`img${i}`]) {
+        localStorage.setItem(`aniv_img_${i}`, updated[`img${i}`]);
+      }
+    }
+
     const baseUrl = window.location.origin + window.location.pathname;
-    const searchParams = new URLSearchParams({ t, b, f, c, l: '1' });
+    const searchParams = new URLSearchParams();
+    searchParams.set('t', t);
+    searchParams.set('b', b);
+    searchParams.set('f', f);
+    searchParams.set('c', c);
+    searchParams.set('l', '1');
+
     const finalUrl = `${baseUrl}?${searchParams.toString()}`;
-    navigator.clipboard.writeText(finalUrl).then(() => showToastMsg("¡Regalo guardado!", "fa-lock text-rose-400"));
+
+    navigator.clipboard.writeText(finalUrl).then(() => {
+      showToastMsg("¡Regalo guardado! Enlace de WhatsApp copiado.", "fa-lock text-rose-400");
+    }).catch(() => {
+      showToastMsg("Guardado. Copia la URL del navegador.", "fa-exclamation-triangle text-yellow-400");
+    });
+
     setShowModal(false);
   };
 
   const getFormattedDate = () => {
-    const d = new Date(config.boda + 'T00:00:00');
-    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    const dateObj = new Date(config.boda + 'T00:00:00');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   return (
     <div className="relative min-h-screen bg-[#fdf6f6] font-sans flex flex-col items-center justify-start pb-12 overflow-x-hidden">
       <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full pointer-events-none z-0" />
-      
-      {/* TOAST */}
+
+      {/* TOAST NOTIFICACIÓN */}
       <div className={`fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-full shadow-2xl z-50 flex items-center space-x-2 transition-all duration-300 ${toast.show ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <i className={`fas ${toast.icon || 'fa-check-circle text-green-400'}`}></i>
+        <span><i className={`fas ${toast.icon || 'fa-check-circle text-green-400'}`}></i></span>
         <span className="text-sm font-medium">{toast.message}</span>
       </div>
 
       {showIntro && (
         <div className={`fixed inset-0 bg-rose-50 z-40 flex flex-col items-center justify-center p-4 transition-all duration-1000 ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <div className="text-center mb-8 max-w-sm">
-            <h1 className="font-serif text-3xl text-rose-900 font-bold">Para mis {config.tios}</h1>
-            <p className="text-gray-600 mt-3 text-sm">Toquen el sobre para abrir este regalo.</p>
+          <div className="text-center mb-8 max-w-sm px-4">
+            <span className="text-xs font-semibold tracking-widest text-rose-500 uppercase">Un mensaje especial de aniversario</span>
+            <h1 className="font-serif text-3xl md:text-4xl text-rose-900 mt-2 font-bold leading-tight">Para mis {config.tios}</h1>
+            <p className="text-gray-600 mt-3 text-sm">Preparen sus corazones, toquen el sobre para abrir este regalo digital hecho con mucho amor desde la distancia.</p>
           </div>
+
           <div className="w-[300px] h-[200px] cursor-pointer relative" onClick={openEnvelope} style={{ perspective: '1000px' }}>
-            <div className={`w-full h-full bg-rose-100 rounded-b-lg shadow-xl border-b-4 border-rose-300 relative transition-transform duration-1000 ${isOpen ? 'rotate-x-[-15deg]' : ''}`} style={{ transformStyle: 'preserve-3d', transform: isOpen ? 'rotateX(-15deg) translateY(150px)' : 'none' }}>
-              <div className="absolute top-0 left-0 w-0 h-0 border-l-[150px] border-l-transparent border-r-[150px] border-r-transparent border-t-[100px] border-t-rose-500 origin-top transition-all duration-500" style={{ transform: isOpen ? 'rotateX(180deg)' : 'none', zIndex: isOpen ? 1 : 4 }} />
+            <div className={`w-full h-full bg-rose-100 rounded-b-lg shadow-xl border-b-4 border-rose-300 relative transition-transform duration-1000`} style={{ transformStyle: 'preserve-3d', transform: isOpen ? 'rotateX(-15deg) translateY(150px)' : 'none' }}>
+              <div 
+                className="absolute top-0 left-0 w-0 h-0 border-l-[150px] border-l-transparent border-r-[150px] border-r-transparent border-t-[100px] border-t-rose-500 origin-top transition-all duration-500"
+                style={{ transform: isOpen ? 'rotateX(180deg)' : 'none', zIndex: isOpen ? 1 : 4, transitionDelay: isOpen ? '0.4s' : '0s' }}
+              />
               <div className="absolute inset-0 bg-rose-200 rounded-b-lg opacity-80 z-30" style={{ clipPath: 'polygon(0 0, 150px 100px, 300px 0, 300px 200px, 0 200px)' }}></div>
-              <div className="absolute bottom-0 left-[10px] right-[10px] bg-white rounded-t-[8px] p-4 flex flex-col justify-between text-center transition-all duration-[800ms]" style={{ zIndex: isOpen ? 5 : 2, height: isOpen ? '240px' : '180px', transform: isOpen ? 'translateY(-130px)' : 'none' }}>
-                <div className="text-rose-600 my-auto"><i className="fas fa-heart text-3xl animate-pulse"></i></div>
+              <div 
+                className="absolute bottom-0 left-[10px] right-[10px] bg-white rounded-8px border border-rose-100 p-4 flex flex-col justify-between text-center transition-all duration-[800ms]"
+                style={{ zIndex: isOpen ? 5 : 2, height: isOpen ? '240px' : '180px', transform: isOpen ? 'translateY(-130px)' : 'none', transitionDelay: isOpen ? '0.8s' : '0s', boxShadow: '0 -5px 15px rgba(0,0,0,0.05)' }}
+              >
+                <div className="text-rose-600 my-auto">
+                  <i className="fas fa-heart text-3xl animate-pulse"></i>
+                  <p className="font-serif font-bold text-lg text-rose-900 mt-2">¡Feliz Aniversario!</p>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Hacer clic para abrir su sorpresa</p>
+                </div>
               </div>
             </div>
           </div>
+          <p className="text-rose-400 text-xs mt-12 animate-bounce flex items-center gap-1">
+            <i className="fas fa-hand-pointer"></i> Presiona el sobre para comenzar
+          </p>
         </div>
+      )}
+
+      {!config.locked && (
+        <button onClick={() => setShowModal(true)} className="fixed top-4 left-4 z-30 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg border border-rose-200 flex items-center justify-center cursor-pointer text-gray-700 hover:text-rose-600 transition-colors">
+          <i className="fas fa-cog text-lg"></i>
+        </button>
       )}
 
       {showMain && (
         <main className={`w-full max-w-lg px-4 pt-16 mt-4 z-10 transition-opacity duration-1000 ${fadeMain ? 'opacity-100' : 'opacity-0'}`}>
-          <h1 className="font-serif text-4xl text-rose-900 text-center font-extrabold">¡{config.tios}!</h1>
-          
-          <div className="bg-white rounded-[24px] p-8 shadow-xl border border-rose-100 text-center my-8">
-            <span className="font-serif text-5xl font-extrabold text-rose-900">{yearsCount}</span>
-            <p className="text-xs text-rose-600 uppercase font-semibold">Años de amor</p>
+          <div className="text-center mb-8 relative">
+            <div className="inline-block bg-rose-100 text-rose-600 px-4 py-1 rounded-full text-xs font-semibold tracking-widest uppercase mb-3">
+              <i className="fas fa-sparkles mr-1"></i> Amor a la Distancia
+            </div>
+            <h1 className="font-serif text-4xl md:text-5xl font-extrabold text-rose-900 leading-tight">¡{config.tios}!</h1>
+            <p className="font-serif text-xl text-rose-600 mt-1 italic font-medium">¡Feliz Aniversario!</p>
+            <div className="flex justify-center my-6 space-x-2">
+              <span className="h-1 w-8 bg-rose-200 rounded-full"></span>
+              <i className="fas fa-heart text-rose-400 text-sm"></i>
+              <span className="h-1 w-8 bg-rose-200 rounded-full"></span>
+            </div>
           </div>
 
-          <div className="bg-rose-900 text-white rounded-[24px] p-8 shadow-2xl mb-8">
-            <div className="text-rose-100 leading-relaxed text-sm whitespace-pre-line text-justify">{config.carta}</div>
-            <p className="text-xs text-rose-300 mt-6 uppercase tracking-widest font-bold">Con todo mi cariño,</p>
-            <p className="font-serif text-lg italic mt-1">{config.firma}</p>
+          <div className="bg-white rounded-[24px] p-8 shadow-xl border border-rose-100 text-center mb-8">
+            <h3 className="text-xs uppercase tracking-wider text-rose-500 font-bold mb-3">Su amor en el tiempo</h3>
+            <div className="flex flex-col items-center justify-center py-4">
+              <div className="bg-rose-50 rounded-full w-32 h-32 flex flex-col items-center justify-center border-4 border-rose-100 shadow-inner">
+                <span className="font-serif text-5xl font-extrabold text-rose-900 leading-none">{yearsCount}</span>
+                <span className="text-xs text-rose-600 uppercase font-semibold mt-1">Años</span>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 italic mt-2 border-t border-rose-50 pt-3">Calculado desde su boda el {getFormattedDate()}</p>
           </div>
 
-          {/* --- CÁPSULA DEL TIEMPO --- */}
+          <div className="bg-rose-900 text-white rounded-[24px] p-8 shadow-2xl relative overflow-hidden mb-8">
+            <div className="text-rose-100 leading-relaxed text-sm whitespace-pre-line text-justify font-light">
+              {config.carta}
+            </div>
+            <div className="mt-8 pt-6 border-t border-rose-800 text-right">
+              <p className="text-xs text-rose-300 uppercase tracking-widest font-bold">Con todo mi cariño,</p>
+              <p className="font-serif text-lg text-rose-100 italic mt-1 font-semibold">{config.firma}</p>
+            </div>
+          </div>
+
+          <div className="mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 justify-items-center">
+              {[1, 2, 3].map((num) => (
+                <div key={num} className={`bg-white p-3 pb-8 shadow-lg max-w-[240px] w-full ${num === 1 ? '-rotate-3' : num === 2 ? 'rotate-3' : '-rotate-1 md:col-span-2'}`}>
+                  <div className="relative bg-rose-50 aspect-square rounded-md overflow-hidden border border-gray-100 flex items-center justify-center">
+                    {config[`img${num}`] ? <img src={config[`img${num}`]} className="w-full h-full object-cover" alt={`Recuerdo ${num}`} /> : <i className="fas fa-heart text-rose-300 text-3xl"></i>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-rose-50 border border-rose-100 rounded-[24px] p-6 text-center mb-10">
+            <p className="text-gray-600 text-xs">Aunque hoy nos separen kilómetros, este abrazo virtual viaja a la velocidad de la luz.</p>
+          </div>
+
+          {/* --- CÁPSULA DEL TIEMPO (NUEVO) --- */}
           <div className="flex flex-col items-center mt-12 mb-20 p-6 bg-white rounded-[24px] shadow-sm border border-rose-100">
             <h3 className="text-rose-900 font-serif font-bold text-lg mb-4">Un mensaje especial</h3>
             <button 
@@ -253,10 +374,15 @@ export default function App() {
             >
               <i className={`fas ${candadoAbierto ? 'fa-lock-open text-green-600' : 'fa-lock text-rose-600'} text-4xl`}></i>
             </button>
+            
             {candadoAbierto && (
               <div className="mt-6 w-full animate-fade-in p-4 bg-green-50 rounded-2xl border border-green-200 text-center">
                 <p className="text-green-800 font-bold mb-4 text-sm">¡Mensaje de voz encontrado!</p>
-                <video controls className="w-full rounded-xl shadow-lg" src="https://i.imgur.com/sk7u7kI.mp4">
+                <video 
+                  controls 
+                  className="w-full rounded-xl shadow-lg"
+                  src="https://i.imgur.com/sk7u7kI.mp4"
+                >
                   Tu navegador no soporta el audio/video.
                 </video>
               </div>
@@ -264,20 +390,19 @@ export default function App() {
           </div>
         </main>
       )}
-      
-      {!config.locked && (
-        <button onClick={() => setShowModal(true)} className="fixed top-4 left-4 z-30 bg-white/80 p-3 rounded-full shadow-lg border border-rose-200"><i className="fas fa-cog text-lg"></i></button>
-      )}
-      
-      {/* MODAL (abreviado por brevedad, es el mismo de tu código) */}
+
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-md rounded-[24px] p-6">
-                <h3 className="text-xl font-bold mb-4">Personaliza</h3>
-                <input className="w-full border p-2 mb-2" placeholder="Nombres" value={inputNames} onChange={(e) => setInputNames(e.target.value)} />
-                <button onClick={generateCustomLink} className="w-full bg-rose-600 text-white py-3 rounded-xl mt-4">Guardar</button>
-                <button onClick={() => setShowModal(false)} className="w-full text-gray-500 mt-2">Cancelar</button>
+          <div className="bg-white w-full max-w-md rounded-[24px] shadow-2xl p-6">
+            <h3 className="font-serif text-xl font-bold mb-4">Personaliza tu Regalo</h3>
+            <div className="space-y-4">
+              <input value={inputNames} onChange={(e) => setInputNames(e.target.value)} className="w-full border p-2 rounded-xl" placeholder="Nombres" />
+              <input type="date" value={inputWeddingDate} onChange={(e) => setInputWeddingDate(e.target.value)} className="w-full border p-2 rounded-xl" />
+              <textarea value={inputLetter} onChange={(e) => setInputLetter(e.target.value)} className="w-full border p-2 rounded-xl" rows="3"></textarea>
+              <button onClick={generateCustomLink} className="w-full bg-rose-600 text-white py-3 rounded-2xl font-bold">Guardar</button>
+              <button onClick={() => setShowModal(false)} className="w-full bg-gray-200 py-2 rounded-2xl text-sm">Cancelar</button>
             </div>
+          </div>
         </div>
       )}
     </div>
