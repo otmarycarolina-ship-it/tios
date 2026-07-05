@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 export default function App() {
   // CONFIGURACIONES PREDETERMINADAS
   const [config, setConfig] = useState({
-    tios: "Queridos Tíos",
+    tios: "Tíos",
     boda: "1996-05-15",
     firma: "Su sobrino(a) que los quiere",
     carta: `Queridos tíos, hoy celebramos no solo el paso del tiempo, sino la hermosa historia que han construido juntos.\n\nA pesar de la distancia física que nos separa hoy, sus risas, consejos y el inmenso ejemplo de unión que nos dan cruzan cualquier frontera. Son el claro ejemplo de que el amor verdadero todo lo puede, se fortalece con los años y florece en cada etapa.\n\n¡Que sigan sumando infinitos momentos felices, salud y complicidad! Les mando un abrazo gigante y apretado.`,
@@ -311,7 +311,7 @@ export default function App() {
                 style={{ 
                   zIndex: isOpen ? 5 : 2, 
                   height: isOpen ? '240px' : '180px',
-                  transform: isOpen ? 'translateY(-130px)' : 'none(),
+                  transform: isOpen ? 'translateY(-130px)' : 'none',
                   transitionDelay: isOpen ? '0.8s' : '0s',
                   boxShadow: '0 -5px 15px rgba(0,0,0,0.05)'
                 }}
