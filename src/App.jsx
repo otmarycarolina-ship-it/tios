@@ -414,16 +414,15 @@ export default function App() {
             </div>
           </div>
 
-          {/* SECCIÓN DEL CANDADO - CÁPSULA DEL TIEMPO INTEGRADA */}
+          {/* SECCIÓN DEL CANDADO - NUEVOS TEXTOS INTEGRADOS */}
           <div className="flex flex-col items-center mt-12 mb-16 bg-white/60 backdrop-blur-sm rounded-[32px] p-8 border border-rose-100 shadow-xl transition-all duration-500">
-            <h3 className="text-rose-900 font-serif font-bold text-xl mb-2">¿Un último secreto?</h3>
-            <p className="text-xs text-gray-500 mb-6 italic text-center px-4">Presiona el candado para ver el mensaje oculto</p>
+            <h3 className="text-rose-900 font-serif font-bold text-xl mb-2">¿Una última sorpresa?</h3>
+            <p className="text-xs text-gray-500 mb-6 italic text-center px-4">Toca el candado para descubrir el mensaje que viaja desde el corazón.</p>
             
             <button 
               onClick={() => {
                 setCandadoAbierto(!candadoAbierto);
                 if(!candadoAbierto && addHeartsRef.current) {
-                  // Pequeña explosión de corazones flotantes al abrir el candado
                   addHeartsRef.current(window.innerWidth / 2, window.innerHeight / 2, 15);
                 }
               }}
@@ -444,8 +443,8 @@ export default function App() {
                     Tu navegador no soporta videos.
                   </video>
                 </div>
-                <p className="text-center text-[10px] text-amber-700 font-serif mt-4 italic tracking-widest uppercase">
-                  ✨ Una sorpresa para siempre ✨
+                <p className="text-center text-[10px] text-amber-700 font-serif mt-4 italic tracking-widest uppercase px-4 leading-relaxed">
+                  ✨ No hay distancia que pueda separar un cariño tan sincero ✨
                 </p>
               </div>
             )}
