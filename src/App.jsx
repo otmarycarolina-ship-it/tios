@@ -30,6 +30,8 @@ export default function App() {
   const [toast, setToast] = useState({ show: false, message: "", icon: "" });
 
   const canvasRef = useRef(null);
+  // Referencia compartida para inyectar explosiones de corazones desde fuera del loop principal
+  const addHeartsRef = useRef(null);
 
   // Cargar parámetros de la URL e imágenes de localStorage
   useEffect(() => {
@@ -102,9 +104,9 @@ export default function App() {
         this.color = `rgba(${220 + Math.random() * 35}, ${50 + Math.random() * 50}, ${80 + Math.random() * 50}, `;
         this.isSparkle = isSparkle;
         if (isSparkle) {
-          this.speedY = -(Math.random() * 3 + 1.5);
-          this.speedX = Math.random() * 4 - 2;
-          this.size = Math.random() * 15 + 10;
+          this.speedY = -(Math.random() * 4 + 2); // Un poco más de impulso vertical para el efecto estallido
+          this.speedX = Math.random() * 6 - 3;     // Más dispersión horizontal
+          this.size = Math.random() * 16 + 8;
           this.opacity = 1;
         }
       }
@@ -132,13 +134,18 @@ export default function App() {
       }
     }
 
+    // Guardamos la función en la referencia para poder llamarla desde openEnvelope
+    addHeartsRef.current = (x, y, count = 8) => {
+      for (let i = 0; i < count; i++) {
+        hearts.push(new Heart(x, y, true));
+      }
+    };
+
     const handleInteraction = (e) => {
       let x = e.clientX || (e.touches && e.touches[0].clientX);
       let y = e.clientY || (e.touches && e.touches[0].clientY);
       if (x && y) {
-        for (let i = 0; i < 8; i++) {
-          hearts.push(new Heart(x, y, true));
-        }
+        addHeartsRef.current(x, y, 8);
       }
     };
 
@@ -176,6 +183,23 @@ export default function App() {
 
   const openEnvelope = () => {
     setIsOpen(true);
+
+    // LLUVIA DE CORAZONES (EFECTO CONFETI)
+    // Genera múltiples ráfagas simulando una explosión festiva desde el centro de la pantalla
+    const midX = window.innerWidth / 2;
+    const midY = window.innerHeight / 2;
+    
+    setTimeout(() => {
+      if (addHeartsRef.current) {
+        // Gran explosión central inicial
+        addHeartsRef.current(midX, midY, 40);
+        
+        // Pequeñas réplicas consecutivas para dar dinamismo a la lluvia
+        setTimeout(() => addHeartsRef.current(midX - 100, midY, 20), 150);
+        setTimeout(() => addHeartsRef.current(midX + 100, midY, 20), 300);
+      }
+    }, 400); // Se dispara justo cuando la solapa se abre completamente y la carta empieza a salir
+
     setTimeout(() => {
       setShowIntro(false);
       setShowMain(true);
@@ -327,7 +351,7 @@ export default function App() {
             <div className="flex justify-center my-6 space-x-2">
               <span className="h-1 w-8 bg-rose-200 rounded-full"></span>
               <i className="fas fa-heart text-rose-400 text-sm"></i>
-              <span class="h-1 w-8 bg-rose-200 rounded-full"></span>
+              <span className="h-1 w-8 bg-rose-200 rounded-full"></span>
             </div>
           </div>
 
@@ -367,8 +391,10 @@ export default function App() {
 
           {/* COLLAGE DE FOTOS */}
           <div className="mb-10">
-            <h3 className="font-serif text-2xl font-bold text-rose-900 text-center mb-1">Nuestros Recuerdos</h3>
-            <p className="text-center text-xs text-gray-500 mb-8 italic">Momentom felices congelados en el tiempo</p>
+            {/* Corregido a "Recuerdos" */}
+            <h3 className="font-serif text-2xl font-bold text-rose-900 text-center mb-1">Recuerdos</h3>
+            {/* Corregido a "momentos" */}
+            <p className="text-center text-xs text-gray-500 mb-8 italic">Momentos felices congelados en el tiempo</p>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 justify-items-center">
               {[1, 2, 3].map((num) => (
@@ -434,7 +460,7 @@ export default function App() {
               </div>
 
               <div className="border-t border-gray-100 pt-4">
-                <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Agregar Fotos para el Collage</h4>
+                <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Agregar Fotos para el Collage</h4>
                 <div className="space-y-3">
                   {[1, 2, 3].map((num) => (
                     <div key={num}>
